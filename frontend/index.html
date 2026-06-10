@@ -483,7 +483,7 @@
         const senha = document.getElementById('login_senha').value;
 
         try {
-            const res = await fetch('/api/login', {
+            const res = await fetch('${API_URL}/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })
@@ -511,7 +511,7 @@
 
     async function carregarOpcoesSelects() {
         try {
-            const res = await fetch('/api/opcoes-selects');
+            const res = await fetch('${API_URL}/api/opcoes-selects');
             const dados = await res.json();
             
             const preencherSelect = (idElemento, lista, campoId, campoTexto) => {
@@ -621,7 +621,7 @@
         };
 
         try {
-            const res = await fetch(`/api/alocacoes/${id}`, {
+            const res = await fetch(`${API_URL}/api/alocacoes/${id}`, {
                 method: metodo,
                 headers: { 'Content-Type': 'application/json' },
                 body: metodo === 'PUT' ? JSON.stringify(dados) : null
@@ -646,7 +646,7 @@
         const container = document.getElementById('resultadoSql');
         container.innerHTML = "<p style='padding: 20px; color:#1e3a8a; font-weight:500; font-size:13px;'>Buscando dados relacionais no Supabase...</p>";
         try {
-            const res = await fetch(`/api/consultas/${id}`);
+            const res = await fetch(`${API_URL}/api/consultas/${id}`);
             const dados = await res.json();
             if (res.status === 500) { container.innerHTML = `<p class='alert erro' style='display:block; margin:20px;'>Erro: ${dados.detalhe}</p>`; return; }
             if (!dados.length) { container.innerHTML = "<p style='padding: 20px; color:#475569; font-size:13px;'>Consulta executada com sucesso, mas retornou zero linhas no SGBD.</p>"; return; }

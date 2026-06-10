@@ -538,14 +538,15 @@
         }
     }
 
-        async function enviarFormulario(event, url, dados) {
-        event.preventDefault();
+        async function enviarFormulario(url, dados, alertId) {
+        // Removemos o event.preventDefault() daqui de dentro, pois os seus 
+        // botões já fazem isso antes de chamar esta função!
         
-        // Garante que a URL não venha duplicada ou com erros de junção
+        // Garante que a URL comece com /api corretamente
         const urlFinal = url.startsWith('/api') ? url : `/api/${url}`;
+        const alertDiv = document.getElementById(alertId);
 
         try {
-            // Envia a requisição correta usando o link da Render e os dados certos
             const res = await fetch(`${API_URL}${urlFinal}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -556,13 +557,17 @@
             
             if (res.ok) {
                 alert("Cadastrado com sucesso!");
-                event.target.reset(); // Limpa as caixas de texto do formulário automaticamente
                 
-                // Recarrega as caixinhas de seleção (Selects) caso tenha cadastrado 
-                // um professor, turma ou disciplina nova para atualizar a grade na hora!
+                // Limpa o formulário correspondente de forma inteligente
+                if (url.includes('professores')) document.getElementById('formProfessor').reset();
+                if (url.includes('disciplinas')) document.getElementById('formDisciplina').reset();
+                if (url.includes('turmas')) document.getElementById('formTurma').reset();
+                if (url.includes('alocacoes')) document.getElementById('formAlocacao').reset();
+                
+                // Atualiza os Selects automaticamente na tela com o novo dado cadastrado
                 await carregarOpcoesSelects(); 
             } else {
-                alert("Erro ao cadastrar: " + (resposta.erro || resposta.detalhe || "Verifique as chaves estrangeiras"));
+                alert("Erro ao cadastrar: " + (resposta.erro || resposta.detalhe || "Verifique chaves estrangeiras ou IDs duplicados."));
             }
         } catch (err) {
             console.error(err);

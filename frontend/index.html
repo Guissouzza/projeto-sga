@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGA - Sistema de Gestão de Alocação</title>
+    <style>
+        /* ----------------------------------------------------------------------
+           CULTURA DESIGN SYSTEM: Variáveis de Cores e Reset Estruturado
+           ---------------------------------------------------------------------- */
+        :root {
+            --bg-principal: #f8fafc;
+            --bg-card: #ffffff;
+            --texto-principal: #0f172a;
+            --texto-secundario: #475569;
+            --azul-puc: #1e3a8a;
+            --azul-puc-hover: #1e40af;
+            --azul-suave: #eff6ff;
+            --borda: #e2e8f0;
+            --sucesso: #10b981;
+            --sucesso-bg: #ecfdf5;
+            --sucesso-texto: #065f46;
+            --erro: #ef4444;
+            --erro-bg: #fef2f2;
+            --erro-texto: #991b1b;
+            --alerta: #f59e0b;
+            --alerta-bg: #fffbeb;
+            --alerta-texto: #92400e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            line-height: 1.5;
+            padding: 40px 20px;
+        }
+
+        /* ----------------------------------------------------------------------
+           LAYOUT DA APLICAÇÃO (Header e Navegação)
+           ---------------------------------------------------------------------- */
+        .header-sistema {
+            max-width: 1000px;
+            margin: 0 auto 30px auto;
+            text-align: left;
+            border-bottom: 1px solid var(--borda);
+            padding-bottom: 20px;
+        }
+
+        .header-sistema h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--azul-puc);
+            letter-spacing: -0.5px;
+        }
+
+        .header-sistema p {
+            font-size: 14px;
+            color: var(--texto-secundario);
+            margin-top: 4px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-width: 1000px;
+            margin: 0 auto 25px auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--texto-secundario);
+            padding: 10px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .tab-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--texto-principal);
+        }
+
+        .tab-btn.active {
+            background-color: var(--azul-suave);
+            color: var(--azul-puc);
+            font-weight: 600;
+            border-color: rgba(30, 58, 138, 0.15);
+        }
+
+        /* Classes de visibilidade controlada */
+        .admin-only {
+            display: none;
+        }
+
+        /* ----------------------------------------------------------------------
+           CONTAINERS E CONTEÚDOS (Cards)
+           ---------------------------------------------------------------------- */
+        .container {
+            max-width: 1000px;
+            background: var(--bg-card);
+            padding: 35px;
+            border-radius: 10px;
+            border: 1px solid var(--borda);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            margin: 0 auto;
+            display: none;
+        }
+
+        .container.active {
+            display: block;
+        }
+
+        .container h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--texto-principal);
+            letter-spacing: -0.3px;
+        }
+
+        .container > p {
+            font-size: 14px;
+            color: var(--texto-secundario);
+            margin-bottom: 25px;
+        }
+
+        /* ----------------------------------------------------------------------
+           FORMULÁRIOS E INPUTS
+           ---------------------------------------------------------------------- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--texto-secundario);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--texto-principal);
+            background-color: #ffffff;
+            transition: all 0.15s ease-in-out;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--azul-puc);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Sub-seções internas */
+        .secao-interna {
+            background-color: #fafafa;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .secao-interna-titulo {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--texto-principal);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ----------------------------------------------------------------------
+           BOTÕES E AÇÕES
+           ---------------------------------------------------------------------- */
+        .btn-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--azul-puc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.15s ease-in-out;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--azul-puc-hover);
+        }
+
+        .grupo-botoes-lado {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-alterar { background-color: var(--alerta); }
+        .btn-alterar:hover { background-color: var(--alerta-texto); }
+        .btn-excluir { background-color: var(--erro); }
+        .btn-excluir:hover { background-color: var(--erro-texto); }
+
+        /* ----------------------------------------------------------------------
+           PANEL DE CONSULTAS E TABELAS ANALÍTICAS
+           ---------------------------------------------------------------------- */
+        .grid-queries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn-query {
+            background-color: #ffffff;
+            color: var(--texto-principal);
+            border: 1px solid var(--borda);
+            padding: 14px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-query:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn-query.btn-view {
+            border-left: 4px solid var(--sucesso);
+        }
+
+        /* Componente Tabela Limpa */
+        .wrapper-tabela {
+            overflow-x: auto;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            margin-top: 15px;
+            background-color: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--texto-secundario);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            border-bottom: 2px solid var(--borda);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--borda);
+            color: var(--texto-principal);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #fdfdfd;
+        }
+
+        /* ----------------------------------------------------------------------
+           NOTIFICAÇÕES E FEEDBACKS (Alerts)
+           ---------------------------------------------------------------------- */
+        .alert {
+            padding: 14px 18px;
+            margin-top: 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            border: 1px solid transparent;
+        }
+
+        .sucesso { background: var(--sucesso-bg); color: var(--sucesso-texto); border-color: rgba(16, 185, 129, 0.2); }
+        .erro { background: var(--erro-bg); color: var(--erro-texto); border-color: rgba(239, 68, 68, 0.2); }
+        .aviso { background: var(--alerta-bg); color: var(--alerta-texto); border-color: rgba(245, 158, 11, 0.2); }
+    </style>
+</head>
+<body>
+
+<header class="header-sistema">
+    <h1>SGA</h1>
+    <p>Sistema de Gestão de Alocação</p>
+</header>
+
+<nav class="nav-tabs">
+    <button class="tab-btn active" id="btn-tab-login" onclick="switchTab('tab-login')">1. Login</button>
+    <button class="tab-btn admin-only" id="btn-tab-professor" onclick="switchTab('tab-professor')">2. Cadastrar Professor</button>
+    <button class="tab-btn admin-only" id="btn-tab-disciplina" onclick="switchTab('tab-disciplina')">3. Cadastrar Disciplina</button>
+    <button class="tab-btn admin-only" id="btn-tab-turma" onclick="switchTab('tab-turma')">4. Cadastrar Turma</button>
+    <button class="tab-btn admin-only" id="btn-tab-alocacao" onclick="switchTab('tab-alocacao')">5. Alocar Horário</button>
+    <button class="tab-btn admin-only" id="btn-tab-gerenciar" onclick="switchTab('tab-gerenciar')">6. Modificar / Excluir</button>
+    <button class="tab-btn" id="btn-tab-consultas" onclick="switchTab('tab-consultas')">7. Painel de Consultas SQL</button>
+</nav>
+
+<div id="tab-login" class="container active">
+    <h2>Autenticação Corporativa</h2>
+    <p>Área restrita para administradores do corpo de coordenação.</p>
+    <form id="formLogin">
+        <div class="form-grid">
+            <div class="form-group"><label>E-mail Acadêmico</label><input type="email" id="login_email" required></div>
+            <div class="form-group"><label>Senha de Acesso</label><input type="password" id="login_senha" required></div>
+        </div>
+        <button type="submit" class="btn-submit">Validar Credenciais</button>
+    </form>
+    <div id="alert-login" class="alert"></div>
+</div>
+
+<div id="tab-professor" class="container">
+    <h2>Cadastrar Novo Professor</h2>
+    <form id="formProfessor">
+        <div class="form-grid">
+            <div class="form-group"><label>ID do Professor (Chave)</label><input type="number" id="prof_id" placeholder="Ex: 9" required></div>
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="prof_nome" placeholder="Ex: Roberta Silva" required></div>
+            <div class="form-group"><label>E-mail Institucional</label><input type="email" id="prof_email" placeholder="roberta@puc.br" required></div>
+            <div class="form-group"><label>Senha Provisória</label><input type="password" id="prof_senha" placeholder="••••••••" required></div>
+        </div>
+        <button type="submit" class="btn-submit">Cadastrar Professor</button>
+    </form>
+    <div id="alert-professor" class="alert"></div>
+</div>
+
+<div id="tab-disciplina" class="container">
+    <h2>Cadastrar Nova Disciplina</h2>
+    <form id="formDisciplina">
+        <div class="form-grid">
+            <div class="form-group"><label>ID da Disciplina</label><input type="number" id="disc_id" placeholder="Ex: 60" required></div>
+            <div class="form-group"><label>Nome da Disciplina</label><input type="text" id="disc_nome" placeholder="Ex: Arquitetura de Software" required></div>
+            <div class="form-group"><label>Carga Horária (Horas)</label><input type="number" id="disc_ch" placeholder="Ex: 80" required></div>
+            <div class="form-group"><label>ID do Período Vinculado</label><input type="number" id="disc_periodo" value="1" required></div>
+        </div>
+        <button type="submit" class="btn-submit">Cadastrar Disciplina</button>
+    </form>
+    <div id="alert-disciplina" class="alert"></div>
+</div>
+
+<div id="tab-turma" class="container">
+    <h2>Cadastrar Nova Turma</h2>
+    <form id="formTurma">
+        <div class="form-grid">
+            <div class="form-group"><label>ID da Turma</label><input type="number" id="turma_id" placeholder="Ex: 102" required></div>
+            <div class="form-group"><label>Nome / Código da Turma</label><input type="text" id="turma_nome" placeholder="Ex: Ciência da Computação - 4°P" required></div>
+            <div class="form-group"><label>ID do Curso</label><input type="number" id="turma_curso" value="1" required></div>
+            <div class="form-group"><label>ID do Período</label><input type="number" id="turma_periodo" value="1" required></div>
+        </div>
+        <button type="submit" class="btn-submit">Cadastrar Turma</button>
+    </form>
+    <div id="alert-turma" class="alert"></div>
+</div>
+
+<div id="tab-alocacao" class="container">
+    <h2>Alocação de Grade Horária</h2>
+    <form id="formAlocacao">
+        <div class="form-grid">
+            <div class="form-group"><label>Turma</label><select id="id_turma" class="sel-dinamico" required></select></div>
+            <div class="form-group"><label>Disciplina</label><select id="id_disciplina" class="sel-dinamico" required></select></div>
+            <div class="form-group"><label>Professor Docente</label><select id="id_professor" class="sel-dinamico" required></select></div>
+            <div class="form-group"><label>Horário / Turno</label><select id="id_horario" class="sel-dinamico" required></select></div>
+            <div class="form-group"><label>Sala</label><select id="id_sala" class="sel-dinamico" required></select></div>
+        </div>
+        <button type="submit" class="btn-submit">Salvar Alocação</button>
+    </form>
+    <div id="alert-alocacao" class="alert"></div>
+</div>
+
+<div id="tab-gerenciar" class="container">
+    <h2>Ações Extra de Grade: Atualização e Exclusão</h2>
+    
+    <div class="form-grid">
+        <div class="form-group full-width">
+            <label style="color: var(--erro-texto);">ID Único da Alocação (id_turma_disciplina)</label>
+            <input type="number" id="gerenciar_id" placeholder="Consulte o painel de consultas para copiar o ID gerado" required>
+        </div>
+    </div>
+
+    <div class="secao-interna">
+        <div class="secao-interna-titulo">Novos Parâmetros (Preencha apenas para Atualizações)</div>
+        <div class="form-grid">
+            <div class="form-group"><label>Nova Turma</label><select id="g_turma" class="sel-dinamico"></select></div>
+            <div class="form-group"><label>Nova Disciplina</label><select id="g_disciplina" class="sel-dinamico"></select></div>
+            <div class="form-group"><label>Novo Professor</label><select id="g_professor" class="sel-dinamico"></select></div>
+            <div class="form-group"><label>Novo Horário</label><select id="g_horario" class="sel-dinamico"></select></div>
+            <div class="form-group"><label>Nova Sala</label><select id="g_sala" class="sel-dinamico"></select></div>
+        </div>
+    </div>
+
+    <div class="grupo-botoes-lado">
+        <button type="button" onclick="executarAcaoGrade('PUT')" class="btn-submit btn-alterar">Atualizar Registro</button>
+        <button type="button" onclick="executarAcaoGrade('DELETE')" class="btn-submit btn-excluir">Remover da Grade</button>
+    </div>
+    
+    <div id="alert-gerenciar" class="alert"></div>
+</div>
+
+<div id="tab-consultas" class="container">
+    <h2>Painel Analítico de Consultas SQL (Parte 2)</h2>
+    
+    <div class="grid-queries">
+        <button class="btn-query" onclick="rodarConsulta(1)">1. Relatório Geral Integrado (JOIN)</button>
+        <button class="btn-query" onclick="rodarConsulta(2)">2. Localização Física por Curso (JOIN)</button>
+        <button class="btn-query" onclick="rodarConsulta(3)">3. Lista Geral de Contatos Corporativos (UNION)</button>
+        <button class="btn-query" onclick="rodarConsulta(4)">4. Escala de Disponibilidade Seg/Ter (INTERSECT)</button>
+        <button class="btn-query" onclick="rodarConsulta(5)">5. Identificação de Falhas de Alocação (EXCEPT)</button>
+        <button class="btn-query" onclick="rodarConsulta(6)">6. Quantitativo de Disciplinas por Curso (COUNT)</button>
+        <button class="btn-query" onclick="rodarConsulta(7)">7. Métricas de Ocupação de Salas (MAX/MIN/AVG)</button>
+        <button class="btn-query" onclick="rodarConsulta(8)">8. Alerta de Carga Horária Elevada (HAVING)</button>
+        <button class="btn-query" onclick="rodarConsulta(9)">9. Indicador de Salas de Alta Movimentação (HAVING)</button>
+        <button class="btn-query" onclick="rodarConsulta(10)">10. Busca Textual por Termo "Dados" (LIKE)</button>
+        <button class="btn-query" onclick="rodarConsulta(11)">11. Filtro por Capacidade Intermediária (BETWEEN)</button>
+        <button class="btn-query" onclick="rodarConsulta(12)">12. Triagem por Turnos Regulares (IN)</button>
+        <button class="btn-query btn-view" onclick="rodarConsulta(13)">13. Visão Estruturada: Grade Geral (VIEW)</button>
+        <button class="btn-query btn-view" onclick="rodarConsulta(14)">14. Visão Estruturada: Ocupação Predial (VIEW)</button>
+    </div>
+    
+    <div id="resultadoSql" class="wrapper-tabela"></div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+    }
+
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alertDiv = document.getElementById('alert-login');
+        const email = document.getElementById('login_email').value;
+        const senha = document.getElementById('login_senha').value;
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha })
+            });
+            const result = await res.json();
+            alertDiv.style.display = 'block';
+
+            if (res.ok) {
+                alertDiv.className = "alert sucesso";
+                alertDiv.innerText = result.mensagem;
+                
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+                await carregarOpcoesSelects();
+                
+                setTimeout(() => switchTab('tab-consultas'), 1000);
+            } else {
+                alertDiv.className = "alert erro";
+                alertDiv.innerText = result.erro;
+            }
+        } catch (err) {
+            alertDiv.className = "alert erro";
+            alertDiv.innerText = "Falha ao conectar no servidor acadêmico.";
+        }
+    });
+
+    async function carregarOpcoesSelects() {
+        try {
+            const res = await fetch('/api/opcoes-selects');
+            const dados = await res.json();
+            
+            const preencherSelect = (idElemento, lista, campoId, campoTexto) => {
+                const select = document.getElementById(idElemento);
+                select.innerHTML = '';
+                lista.forEach(item => {
+                    select.innerHTML += `<option value="${item[campoId]}">${item[campoTexto]} (ID: ${item[campoId]})</option>`;
+                });
+            };
+
+            preencherSelect('id_turma', dados.turmas, 'id_turma', 'nome');
+            preencherSelect('id_disciplina', dados.disciplinas, 'id_disciplina', 'nome');
+            preencherSelect('id_professor', dados.professores, 'id_professor', 'nome');
+            preencherSelect('id_horario', dados.horarios, 'id_horario', 'descricao');
+            preencherSelect('id_sala', dados.salas, 'id_sala', 'numero');
+
+            preencherSelect('g_turma', dados.turmas, 'id_turma', 'nome');
+            preencherSelect('g_disciplina', dados.disciplinas, 'id_disciplina', 'nome');
+            preencherSelect('g_professor', dados.professores, 'id_professor', 'nome');
+            preencherSelect('g_horario', dados.horarios, 'id_horario', 'descricao');
+            preencherSelect('g_sala', dados.salas, 'id_sala', 'numero');
+        } catch (e) {
+            console.error("Erro ao alimentar seletores dinâmicos do SGBD", e);
+        }
+    }
+
+    async function enviarFormulario(url, dados, alertId) {
+        const alertDiv = document.getElementById(alertId);
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            const result = await res.json();
+            alertDiv.style.display = 'block';
+            if (res.ok) {
+                alertDiv.className = "alert sucesso";
+                alertDiv.innerText = result.mensagem;
+            } else {
+                alertDiv.className = "alert erro";
+                alertDiv.innerText = result.erro || result.detalhe;
+            }
+        } catch (e) {
+            alertDiv.className = "alert erro";
+            alertDiv.innerText = "Erro interno na transmissão da requisição.";
+        }
+    }
+
+    document.getElementById('formProfessor').addEventListener('submit', (e) => {
+        e.preventDefault();
+        enviarFormulario('/api/professores', {
+            id_professor: document.getElementById('prof_id').value,
+            nome: document.getElementById('prof_nome').value,
+            email: document.getElementById('prof_email').value,
+            senha: document.getElementById('prof_senha').value
+        }, 'alert-professor');
+    });
+
+    document.getElementById('formDisciplina').addEventListener('submit', (e) => {
+        e.preventDefault();
+        enviarFormulario('/api/disciplinas', {
+            id_disciplina: document.getElementById('disc_id').value,
+            nome: document.getElementById('disc_nome').value,
+            carga_horaria: document.getElementById('disc_ch').value,
+            id_periodo: document.getElementById('disc_periodo').value
+        }, 'alert-disciplina');
+    });
+
+    document.getElementById('formTurma').addEventListener('submit', (e) => {
+        e.preventDefault();
+        enviarFormulario('/api/turmas', {
+            id_turma: document.getElementById('turma_id').value,
+            nome: document.getElementById('turma_nome').value,
+            id_curso: document.getElementById('turma_curso').value,
+            id_periodo: document.getElementById('turma_periodo').value
+        }, 'alert-turma');
+    });
+
+    document.getElementById('formAlocacao').addEventListener('submit', (e) => {
+        e.preventDefault();
+        enviarFormulario('/api/alocacoes', {
+            id_turma: document.getElementById('id_turma').value,
+            id_disciplina: document.getElementById('id_disciplina').value,
+            id_professor: document.getElementById('id_professor').value,
+            id_horario: document.getElementById('id_horario').value,
+            id_sala: document.getElementById('id_sala').value
+        }, 'alert-alocacao');
+    });
+
+    async function executarAcaoGrade(metodo) {
+        const id = document.getElementById('gerenciar_id').value;
+        const alertDiv = document.getElementById('alert-gerenciar');
+        if (!id) {
+            alertDiv.style.display = 'block';
+            alertDiv.className = "alert erro";
+            alertDiv.innerText = "Operação rejeitada: Informe o ID único do registro alvo.";
+            return;
+        }
+
+        const dados = {
+            id_turma: document.getElementById('g_turma').value,
+            id_disciplina: document.getElementById('g_disciplina').value,
+            id_professor: document.getElementById('g_professor').value,
+            id_horario: document.getElementById('g_horario').value,
+            id_sala: document.getElementById('g_sala').value
+        };
+
+        try {
+            const res = await fetch(`/api/alocacoes/${id}`, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: metodo === 'PUT' ? JSON.stringify(dados) : null
+            });
+            const result = await res.json();
+            alertDiv.style.display = 'block';
+            if (res.ok) {
+                alertDiv.className = "alert sucesso";
+                alertDiv.innerText = result.mensagem;
+            } else {
+                alertDiv.className = "alert erro";
+                alertDiv.innerText = result.erro || result.detalhe;
+            }
+        } catch (e) {
+            alertDiv.style.display = 'block';
+            alertDiv.className = "alert erro";
+            alertDiv.innerText = "Erro na comunicação de modificação com a API.";
+        }
+    }
+
+    async function rodarConsulta(id) {
+        const container = document.getElementById('resultadoSql');
+        container.innerHTML = "<p style='padding: 20px; color:#1e3a8a; font-weight:500; font-size:13px;'>Buscando dados relacionais no Supabase...</p>";
+        try {
+            const res = await fetch(`/api/consultas/${id}`);
+            const dados = await res.json();
+            if (res.status === 500) { container.innerHTML = `<p class='alert erro' style='display:block; margin:20px;'>Erro: ${dados.detalhe}</p>`; return; }
+            if (!dados.length) { container.innerHTML = "<p style='padding: 20px; color:#475569; font-size:13px;'>Consulta executada com sucesso, mas retornou zero linhas no SGBD.</p>"; return; }
+            
+            let html = '<table><thead><tr>';
+            Object.keys(dados[0]).forEach(chave => html += `<th>${chave.replace('_', ' ')}</th>`);
+            html += '</tr></thead><tbody>';
+            dados.forEach(linha => {
+                html += '<tr>';
+                Object.values(linha).forEach(valor => html += `<td>${valor}</td>`);
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = "<p class='alert erro' style='display:block; margin:20px;'>Erro de rede ou conexão com a API.</p>";
+        }
+    }
+</script>
+</body>
+</html>

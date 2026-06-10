@@ -538,26 +538,35 @@
         }
     }
 
-    async function enviarFormulario(url, dados, alertId) {
-        const alertDiv = document.getElementById(alertId);
+        async function enviarFormulario(event, url, dados) {
+        event.preventDefault();
+        
+        // Garante que a URL não venha duplicada ou com erros de junção
+        const urlFinal = url.startsWith('/api') ? url : `/api/${url}`;
+
         try {
-            const res = await fetch(`${API_URL}${url}${url}`, {
+            // Envia a requisição correta usando o link da Render e os dados certos
+            const res = await fetch(`${API_URL}${urlFinal}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
-            const result = await res.json();
-            alertDiv.style.display = 'block';
+
+            const resposta = await res.json();
+            
             if (res.ok) {
-                alertDiv.className = "alert sucesso";
-                alertDiv.innerText = result.mensagem;
+                alert("Cadastrado com sucesso!");
+                event.target.reset(); // Limpa as caixas de texto do formulário automaticamente
+                
+                // Recarrega as caixinhas de seleção (Selects) caso tenha cadastrado 
+                // um professor, turma ou disciplina nova para atualizar a grade na hora!
+                await carregarOpcoesSelects(); 
             } else {
-                alertDiv.className = "alert erro";
-                alertDiv.innerText = result.erro || result.detalhe;
+                alert("Erro ao cadastrar: " + (resposta.erro || resposta.detalhe || "Verifique as chaves estrangeiras"));
             }
-        } catch (e) {
-            alertDiv.className = "alert erro";
-            alertDiv.innerText = "Erro interno na transmissão da requisição.";
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao conectar com o servidor acadêmico.");
         }
     }
 

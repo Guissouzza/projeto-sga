@@ -276,4 +276,4 @@ app.get('/api/consultas/:id', async (req, res) => {
 });
 
 const porta = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando e blindado na porta ${porta}`));
+app.listen(porta, () => console.log(`Servidor rodando e blindado na porta ${porta}`));

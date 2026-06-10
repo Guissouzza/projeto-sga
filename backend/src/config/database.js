@@ -1,12 +1,11 @@
 const { Pool } = require('pg');
 
-// Substitua pela sua string de conexão com a sua senha real
-const connectionString = 'postgresql://postgres:1IFufdLaqOtpGEyI@db.bcrkpghlsvhrbbnjwexo.supabase.co:5432/postgres';
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres.bcrkpghlsvhrbbnjwexo:1IFufdLaqOtpGEyI@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require';
 
 const pool = new Pool({
     connectionString: connectionString,
     ssl: {
-        rejectUnauthorized: false // Obrigatório para conexões seguras na nuvem (Supabase/Render)
+        rejectUnauthorized: false // Obrigatório para o Supabase/Render
     }
 });
 
